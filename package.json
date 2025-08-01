@@ -1,0 +1,47 @@
+{
+  "type": "module",
+  "name": "spica-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Spica integration - manage buckets, functions, and data",
+  "main": "dist/index.js",
+  "bin": {
+    "spica-mcp-server": "dist/index.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "package.json"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/server.ts",
+    "start": "node dist/index.js",
+    "setup": "node setup.mjs",
+    "test-mcp": "node test-mcp-connection.mjs",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "spica",
+    "model-context-protocol",
+    "ai",
+    "backend",
+    "database"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/spica-mcp-server.git"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "axios": "^1.11.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.1.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}

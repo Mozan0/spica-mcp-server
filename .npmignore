@@ -1,0 +1,17 @@
+src/
+tsconfig.json
+.vscode/
+.git/
+.gitignore
+*.test.ts
+*.test.js
+test-*.mjs
+test-*.js
+simple-mcp-test.mjs
+setup.mjs
+create-user-bucket.mjs
+TESTING-GUIDE.md
+QUICK-START.md
+config.json
+copilot-agent.json
+.env
