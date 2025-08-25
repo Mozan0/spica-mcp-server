@@ -1,5 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { FastMCP } from "fastmcp";
 import { z } from "zod";
 import axios from "axios";
 import fs from "node:fs";
@@ -25,8 +24,8 @@ try {
   console.error("Error loading config:", error);
 }
 
-// Create an MCP server
-const server = new McpServer({
+// Create FastMCP server
+const server = new FastMCP({
   name: "spica-mcp-server",
   version: "1.0.0",
 });
@@ -77,63 +76,43 @@ async function makeSpicaRequest(method: string, endpoint: string, data?: any) {
 }
 
 // BUCKET CRUD OPERATIONS
-server.registerTool(
-  "bucket-list",
-  {
-    title: "List Buckets",
-    description: "Get all buckets from Spica",
-    inputSchema: {},
-  },
-  async () => {
+server.addTool({
+  name: "bucket-list",
+  description: "Get all buckets from Spica",
+  parameters: z.object({}),
+  execute: async () => {
     try {
       const response = await makeSpicaRequest("GET", "/bucket");
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Buckets retrieved successfully:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ Buckets retrieved successfully:\n${JSON.stringify(
+        response.data,
+        null,
+        2
+      )}`;
     } catch (err: any) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Failed to list buckets:\n${err.message}`,
-          },
-        ],
-      };
+      return `❌ Failed to list buckets:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "bucket-create",
-  {
-    title: "Create Bucket",
-    description: "Create a new bucket in Spica",
-    inputSchema: {
-      title: z.string(),
-      description: z.string(),
-      properties: z.record(z.any()),
-      icon: z.optional(z.string()),
-      primary: z.optional(z.string()),
-      readOnly: z.optional(z.boolean()),
-      history: z.optional(z.boolean()),
-      acl: z.optional(
-        z.object({
-          read: z.string(),
-          write: z.string(),
-        })
-      ),
-    },
   },
-  async ({
+});
+
+server.addTool({
+  name: "bucket-create",
+  description: "Create a new bucket in Spica",
+  parameters: z.object({
+    title: z.string(),
+    description: z.string(),
+    properties: z.record(z.any()),
+    icon: z.string().optional(),
+    primary: z.string().optional(),
+    readOnly: z.boolean().optional(),
+    history: z.boolean().optional(),
+    acl: z
+      .object({
+        read: z.string(),
+        write: z.string(),
+      })
+      .optional(),
+  }),
+  execute: async ({
     title,
     description,
     properties,
@@ -157,54 +136,37 @@ server.registerTool(
       };
 
       const response = await makeSpicaRequest("POST", "/bucket", bucketData);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Bucket created successfully:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ Bucket created successfully:\n${JSON.stringify(
+        response.data,
+        null,
+        2
+      )}`;
     } catch (err: any) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Failed to create bucket:\n${err.message}`,
-          },
-        ],
-      };
+      return `❌ Failed to create bucket:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "bucket-update",
-  {
-    title: "Update Bucket",
-    description: "Update an existing bucket in Spica",
-    inputSchema: {
-      bucketId: z.string(),
-      title: z.optional(z.string()),
-      description: z.optional(z.string()),
-      properties: z.optional(z.record(z.any())),
-      icon: z.optional(z.string()),
-      primary: z.optional(z.string()),
-      readOnly: z.optional(z.boolean()),
-      history: z.optional(z.boolean()),
-      acl: z.optional(
-        z.object({
-          read: z.string(),
-          write: z.string(),
-        })
-      ),
-    },
   },
-  async ({ bucketId, ...updateData }) => {
+});
+
+server.addTool({
+  name: "bucket-update",
+  description: "Update an existing bucket in Spica",
+  parameters: z.object({
+    bucketId: z.string(),
+    title: z.string().optional(),
+    description: z.string().optional(),
+    properties: z.record(z.any()).optional(),
+    icon: z.string().optional(),
+    primary: z.string().optional(),
+    readOnly: z.boolean().optional(),
+    history: z.boolean().optional(),
+    acl: z
+      .object({
+        read: z.string(),
+        write: z.string(),
+      })
+      .optional(),
+  }),
+  execute: async ({ bucketId, ...updateData }) => {
     try {
       // First get the current bucket data
       const currentResponse = await makeSpicaRequest(
@@ -221,77 +183,43 @@ server.registerTool(
         `/bucket/${bucketId}`,
         mergedData
       );
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Bucket updated successfully:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ Bucket updated successfully:\n${JSON.stringify(
+        response.data,
+        null,
+        2
+      )}`;
     } catch (err: any) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Failed to update bucket:\n${err.message}`,
-          },
-        ],
-      };
+      return `❌ Failed to update bucket:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "bucket-delete",
-  {
-    title: "Delete Bucket",
-    description: "Delete a bucket from Spica",
-    inputSchema: {
-      bucketId: z.string(),
-    },
   },
-  async ({ bucketId }) => {
+});
+
+server.addTool({
+  name: "bucket-delete",
+  description: "Delete a bucket from Spica",
+  parameters: z.object({
+    bucketId: z.string(),
+  }),
+  execute: async ({ bucketId }) => {
     try {
       const response = await makeSpicaRequest("DELETE", `/bucket/${bucketId}`);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Bucket deleted successfully`,
-          },
-        ],
-      };
+      return `✅ Bucket deleted successfully`;
     } catch (err: any) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Failed to delete bucket:\n${err.message}`,
-          },
-        ],
-      };
+      return `❌ Failed to delete bucket:\n${err.message}`;
     }
-  }
-);
+  },
+});
 
 // BUCKET DATA CRUD OPERATIONS
-server.registerTool(
-  "bucket-data-list",
-  {
-    title: "List Bucket Data",
-    description: "Get all data from a specific bucket",
-    inputSchema: {
-      bucketId: z.string(),
-      limit: z.optional(z.number()),
-      skip: z.optional(z.number()),
-    },
-  },
-  async ({ bucketId, limit, skip }) => {
+server.addTool({
+  name: "bucket-data-list",
+  description: "Get all data from a specific bucket",
+  parameters: z.object({
+    bucketId: z.string(),
+    limit: z.number().optional(),
+    skip: z.number().optional(),
+  }),
+  execute: async ({ bucketId, limit, skip }) => {
     try {
       let endpoint = `/bucket/${bucketId}/data`;
       const params = new URLSearchParams();
@@ -300,202 +228,117 @@ server.registerTool(
       if (params.toString()) endpoint += `?${params.toString()}`;
 
       const response = await makeSpicaRequest("GET", endpoint);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Bucket data retrieved successfully:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ Bucket data retrieved successfully:\n${JSON.stringify(
+        response.data,
+        null,
+        2
+      )}`;
     } catch (err: any) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Failed to list bucket data:\n${err.message}`,
-          },
-        ],
-      };
+      return `❌ Failed to list bucket data:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "bucket-data-create",
-  {
-    title: "Create Bucket Data",
-    description: "Add new data to a bucket",
-    inputSchema: {
-      bucketId: z.string(),
-      data: z.record(z.any()),
-    },
   },
-  async ({ bucketId, data }) => {
+});
+
+server.addTool({
+  name: "bucket-data-create",
+  description: "Add new data to a bucket",
+  parameters: z.object({
+    bucketId: z.string(),
+    data: z.record(z.any()),
+  }),
+  execute: async ({ bucketId, data }) => {
     try {
       const response = await makeSpicaRequest(
         "POST",
         `/bucket/${bucketId}/data`,
         data
       );
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Bucket data created successfully:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ Bucket data created successfully:\n${JSON.stringify(
+        response.data,
+        null,
+        2
+      )}`;
     } catch (err: any) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Failed to create bucket data:\n${err.message}`,
-          },
-        ],
-      };
+      return `❌ Failed to create bucket data:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "bucket-data-update",
-  {
-    title: "Update Bucket Data",
-    description: "Update existing data in a bucket",
-    inputSchema: {
-      bucketId: z.string(),
-      dataId: z.string(),
-      data: z.record(z.any()),
-    },
   },
-  async ({ bucketId, dataId, data }) => {
+});
+
+server.addTool({
+  name: "bucket-data-update",
+  description: "Update existing data in a bucket",
+  parameters: z.object({
+    bucketId: z.string(),
+    dataId: z.string(),
+    data: z.record(z.any()),
+  }),
+  execute: async ({ bucketId, dataId, data }) => {
     try {
       const response = await makeSpicaRequest(
         "PUT",
         `/bucket/${bucketId}/data/${dataId}`,
         data
       );
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Bucket data updated successfully:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ Bucket data updated successfully:\n${JSON.stringify(
+        response.data,
+        null,
+        2
+      )}`;
     } catch (err: any) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Failed to update bucket data:\n${err.message}`,
-          },
-        ],
-      };
+      return `❌ Failed to update bucket data:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "bucket-data-delete",
-  {
-    title: "Delete Bucket Data",
-    description: "Delete specific data from a bucket",
-    inputSchema: {
-      bucketId: z.string(),
-      dataId: z.string(),
-    },
   },
-  async ({ bucketId, dataId }) => {
+});
+
+server.addTool({
+  name: "bucket-data-delete",
+  description: "Delete specific data from a bucket",
+  parameters: z.object({
+    bucketId: z.string(),
+    dataId: z.string(),
+  }),
+  execute: async ({ bucketId, dataId }) => {
     try {
       const response = await makeSpicaRequest(
         "DELETE",
         `/bucket/${bucketId}/data/${dataId}`
       );
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Bucket data deleted successfully`,
-          },
-        ],
-      };
+      return `✅ Bucket data deleted successfully`;
     } catch (err: any) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Failed to delete bucket data:\n${err.message}`,
-          },
-        ],
-      };
+      return `❌ Failed to delete bucket data:\n${err.message}`;
     }
-  }
-);
+  },
+});
 
 // FUNCTION CRUD OPERATIONS
-server.registerTool(
-  "function-list",
-  {
-    title: "List Functions",
-    description: "Get all functions from Spica",
-    inputSchema: {},
-  },
-  async () => {
+server.addTool({
+  name: "function-list",
+  description: "Get all functions from Spica",
+  parameters: z.object({}),
+  execute: async () => {
     try {
       const response = await makeSpicaRequest("GET", "/function");
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Functions retrieved successfully:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ Functions retrieved successfully:\n${JSON.stringify(
+        response.data,
+        null,
+        2
+      )}`;
     } catch (err: any) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Failed to list functions:\n${err.message}`,
-          },
-        ],
-      };
+      return `❌ Failed to list functions:\n${err.message}`;
     }
-  }
-);
+  },
+});
 
 // PASSPORT: IDENTITIES
-server.registerTool(
-  "passport-identity-list",
-  {
-    title: "List Identities",
-    description: "Get all identities from Spica",
-    inputSchema: {
-      limit: z.optional(z.number()),
-      skip: z.optional(z.number()),
-      sort: z.optional(z.string()),
-    },
-  },
-  async ({ limit, skip, sort }) => {
+server.addTool({
+  name: "passport-identity-list",
+  description: "Get all identities from Spica",
+  parameters: z.object({
+    limit: z.number().optional(),
+    skip: z.number().optional(),
+    sort: z.string().optional(),
+  }),
+  execute: async ({ limit, skip, sort }) => {
     try {
       let endpoint = "/passport/identity";
       const params = new URLSearchParams();
@@ -505,81 +348,47 @@ server.registerTool(
       if (params.toString()) endpoint += `?${params.toString()}`;
 
       const response = await makeSpicaRequest("GET", endpoint);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Identities retrieved successfully:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ Identities retrieved successfully:\n${JSON.stringify(
+        response.data,
+        null,
+        2
+      )}`;
     } catch (err: any) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Failed to list identities:\n${err.message}`,
-          },
-        ],
-      };
+      return `❌ Failed to list identities:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "passport-identity-get",
-  {
-    title: "Get Identity",
-    description: "Get a single identity by id",
-    inputSchema: { id: z.string() },
   },
-  async ({ id }) => {
+});
+
+server.addTool({
+  name: "passport-identity-get",
+  description: "Get a single identity by id",
+  parameters: z.object({ id: z.string() }),
+  execute: async ({ id }) => {
     try {
       const response = await makeSpicaRequest(
         "GET",
         `/passport/identity/${id}`
       );
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Identity retrieved successfully:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ Identity retrieved successfully:\n${JSON.stringify(
+        response.data,
+        null,
+        2
+      )}`;
     } catch (err: any) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Failed to get identity:\n${err.message}`,
-          },
-        ],
-      };
+      return `❌ Failed to get identity:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "passport-identity-create",
-  {
-    title: "Create Identity",
-    description: "Create a new identity in Spica",
-    inputSchema: {
-      identifier: z.string(),
-      password: z.string(),
-      attributes: z.optional(z.record(z.any())),
-    },
   },
-  async ({ identifier, password, attributes }) => {
+});
+
+server.addTool({
+  name: "passport-identity-create",
+  description: "Create a new identity in Spica",
+  parameters: z.object({
+    identifier: z.string(),
+    password: z.string(),
+    attributes: z.record(z.any()).optional(),
+  }),
+  execute: async ({ identifier, password, attributes }) => {
     try {
       const body: any = { identifier, password };
       if (attributes) body.attributes = attributes;
@@ -588,44 +397,27 @@ server.registerTool(
         "/passport/identity",
         body
       );
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Identity created successfully:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ Identity created successfully:\n${JSON.stringify(
+        response.data,
+        null,
+        2
+      )}`;
     } catch (err: any) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Failed to create identity:\n${err.message}`,
-          },
-        ],
-      };
+      return `❌ Failed to create identity:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "passport-identity-update",
-  {
-    title: "Update Identity",
-    description: "Update an existing identity",
-    inputSchema: {
-      id: z.string(),
-      identifier: z.optional(z.string()),
-      password: z.optional(z.string()),
-      attributes: z.optional(z.record(z.any())),
-    },
   },
-  async ({ id, ...update }) => {
+});
+
+server.addTool({
+  name: "passport-identity-update",
+  description: "Update an existing identity",
+  parameters: z.object({
+    id: z.string(),
+    identifier: z.string().optional(),
+    password: z.string().optional(),
+    attributes: z.record(z.any()).optional(),
+  }),
+  execute: async ({ id, ...update }) => {
     try {
       // Fetch current
       const current = await makeSpicaRequest("GET", `/passport/identity/${id}`);
@@ -635,200 +427,109 @@ server.registerTool(
         `/passport/identity/${id}`,
         merged
       );
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Identity updated successfully:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ Identity updated successfully:\n${JSON.stringify(
+        response.data,
+        null,
+        2
+      )}`;
     } catch (err: any) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Failed to update identity:\n${err.message}`,
-          },
-        ],
-      };
+      return `❌ Failed to update identity:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "passport-identity-delete",
-  {
-    title: "Delete Identity",
-    description: "Delete an identity",
-    inputSchema: { id: z.string() },
   },
-  async ({ id }) => {
+});
+
+server.addTool({
+  name: "passport-identity-delete",
+  description: "Delete an identity",
+  parameters: z.object({ id: z.string() }),
+  execute: async ({ id }) => {
     try {
       const response = await makeSpicaRequest(
         "DELETE",
         `/passport/identity/${id}`
       );
-      return {
-        content: [{ type: "text", text: `✅ Identity deleted successfully` }],
-      };
+      return `✅ Identity deleted successfully`;
     } catch (err: any) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Failed to delete identity:\n${err.message}`,
-          },
-        ],
-      };
+      return `❌ Failed to delete identity:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "passport-identity-verify",
-  {
-    title: "Verify Identity Token",
-    description: "Verify current identity token",
-    inputSchema: {},
   },
-  async () => {
+});
+
+server.addTool({
+  name: "passport-identity-verify",
+  description: "Verify current identity token",
+  parameters: z.object({}),
+  execute: async () => {
     try {
       const response = await makeSpicaRequest(
         "GET",
         "/passport/identity/verify"
       );
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Token verified:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ Token verified:\n${JSON.stringify(response.data, null, 2)}`;
     } catch (err: any) {
-      return {
-        content: [
-          { type: "text", text: `❌ Token verify failed:\n${err.message}` },
-        ],
-      };
+      return `❌ Token verify failed:\n${err.message}`;
     }
-  }
-);
+  },
+});
 
 // Login (identify) - this endpoint doesn't require API key auth
-server.registerTool(
-  "passport-login",
-  {
-    title: "Login (Identify)",
-    description: "Obtain access and refresh tokens by identifier/password",
-    inputSchema: { identifier: z.string(), password: z.string() },
-  },
-  async ({ identifier, password }) => {
+server.addTool({
+  name: "passport-login",
+  description: "Obtain access and refresh tokens by identifier/password",
+  parameters: z.object({ identifier: z.string(), password: z.string() }),
+  execute: async ({ identifier, password }) => {
     try {
       const response = await makeSpicaRequest("POST", "/passport/identify", {
         identifier,
         password,
       });
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Login successful:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ Login successful:\n${JSON.stringify(response.data, null, 2)}`;
     } catch (err: any) {
-      return {
-        content: [{ type: "text", text: `❌ Login failed:\n${err.message}` }],
-      };
+      return `❌ Login failed:\n${err.message}`;
     }
-  }
-);
+  },
+});
 
 // PASSPORT: API KEYS
-server.registerTool(
-  "passport-apikey-list",
-  {
-    title: "List API Keys",
-    description: "Get all API keys",
-    inputSchema: {},
-  },
-  async () => {
+server.addTool({
+  name: "passport-apikey-list",
+  description: "Get all API keys",
+  parameters: z.object({}),
+  execute: async () => {
     try {
       const response = await makeSpicaRequest("GET", "/passport/apikey");
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ API keys:\n${JSON.stringify(response.data, null, 2)}`,
-          },
-        ],
-      };
+      return `✅ API keys:\n${JSON.stringify(response.data, null, 2)}`;
     } catch (err: any) {
-      return {
-        content: [
-          { type: "text", text: `❌ Failed to list apikeys:\n${err.message}` },
-        ],
-      };
+      return `❌ Failed to list apikeys:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "passport-apikey-get",
-  {
-    title: "Get API Key",
-    description: "Get a single API key by id",
-    inputSchema: { id: z.string() },
   },
-  async ({ id }) => {
+});
+
+server.addTool({
+  name: "passport-apikey-get",
+  description: "Get a single API key by id",
+  parameters: z.object({ id: z.string() }),
+  execute: async ({ id }) => {
     try {
       const response = await makeSpicaRequest("GET", `/passport/apikey/${id}`);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ API key:\n${JSON.stringify(response.data, null, 2)}`,
-          },
-        ],
-      };
+      return `✅ API key:\n${JSON.stringify(response.data, null, 2)}`;
     } catch (err: any) {
-      return {
-        content: [
-          { type: "text", text: `❌ Failed to get apikey:\n${err.message}` },
-        ],
-      };
+      return `❌ Failed to get apikey:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "passport-apikey-create",
-  {
-    title: "Create API Key",
-    description: "Create a new API key",
-    inputSchema: {
-      name: z.string(),
-      description: z.optional(z.string()),
-      active: z.optional(z.boolean()),
-      // optional policies to attach immediately after creation
-      policies: z.optional(z.array(z.string())),
-    },
   },
-  async ({ name, description, active = true, policies }) => {
+});
+
+server.addTool({
+  name: "passport-apikey-create",
+  description: "Create a new API key",
+  parameters: z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    active: z.boolean().optional(),
+    // optional policies to attach immediately after creation
+    policies: z.array(z.string()).optional(),
+  }),
+  execute: async ({ name, description, active = true, policies }) => {
     try {
       const body: any = { name, description, active };
       const response = await makeSpicaRequest("POST", "/passport/apikey", body);
@@ -844,53 +545,32 @@ server.registerTool(
             );
           } catch (innerErr: any) {
             // continue assigning others but report error
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `⚠️ API key created but failed to assign policy ${policyId}:\n${innerErr.message}`,
-                },
-              ],
-            };
+            return `⚠️ API key created but failed to assign policy ${policyId}:\n${innerErr.message}`;
           }
         }
       }
 
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ API key created successfully:\n${JSON.stringify(
-              created,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ API key created successfully:\n${JSON.stringify(
+        created,
+        null,
+        2
+      )}`;
     } catch (err: any) {
-      return {
-        content: [
-          { type: "text", text: `❌ Failed to create apikey:\n${err.message}` },
-        ],
-      };
+      return `❌ Failed to create apikey:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "passport-apikey-update",
-  {
-    title: "Update API Key",
-    description: "Update an API key (name/description/active)",
-    inputSchema: {
-      id: z.string(),
-      name: z.optional(z.string()),
-      description: z.optional(z.string()),
-      active: z.optional(z.boolean()),
-    },
   },
-  async ({ id, ...update }) => {
+});
+
+server.addTool({
+  name: "passport-apikey-update",
+  description: "Update an API key (name/description/active)",
+  parameters: z.object({
+    id: z.string(),
+    name: z.string().optional(),
+    description: z.string().optional(),
+    active: z.boolean().optional(),
+  }),
+  execute: async ({ id, ...update }) => {
     try {
       const current = await makeSpicaRequest("GET", `/passport/apikey/${id}`);
       const merged = { ...current.data, ...update };
@@ -899,247 +579,147 @@ server.registerTool(
         `/passport/apikey/${id}`,
         merged
       );
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ API key updated:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ API key updated:\n${JSON.stringify(response.data, null, 2)}`;
     } catch (err: any) {
-      return {
-        content: [
-          { type: "text", text: `❌ Failed to update apikey:\n${err.message}` },
-        ],
-      };
+      return `❌ Failed to update apikey:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "passport-apikey-delete",
-  {
-    title: "Delete API Key",
-    description: "Delete an API key",
-    inputSchema: { id: z.string() },
   },
-  async ({ id }) => {
+});
+
+server.addTool({
+  name: "passport-apikey-delete",
+  description: "Delete an API key",
+  parameters: z.object({ id: z.string() }),
+  execute: async ({ id }) => {
     try {
       await makeSpicaRequest("DELETE", `/passport/apikey/${id}`);
-      return { content: [{ type: "text", text: `✅ API key deleted` }] };
+      return `✅ API key deleted`;
     } catch (err: any) {
-      return {
-        content: [
-          { type: "text", text: `❌ Failed to delete apikey:\n${err.message}` },
-        ],
-      };
+      return `❌ Failed to delete apikey:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "passport-apikey-assign-policy",
-  {
-    title: "Assign Policy to API Key",
-    description: "Assign a policy to an existing API key",
-    inputSchema: { apikeyId: z.string(), policyId: z.string() },
   },
-  async ({ apikeyId, policyId }) => {
+});
+
+server.addTool({
+  name: "passport-apikey-assign-policy",
+  description: "Assign a policy to an existing API key",
+  parameters: z.object({ apikeyId: z.string(), policyId: z.string() }),
+  execute: async ({ apikeyId, policyId }) => {
     try {
       const response = await makeSpicaRequest(
         "PUT",
         `/passport/apikey/${apikeyId}/policy/${policyId}`
       );
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Policy assigned to API key:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ Policy assigned to API key:\n${JSON.stringify(
+        response.data,
+        null,
+        2
+      )}`;
     } catch (err: any) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Failed to assign policy to apikey:\n${err.message}`,
-          },
-        ],
-      };
+      return `❌ Failed to assign policy to apikey:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "passport-apikey-remove-policy",
-  {
-    title: "Remove Policy from API Key",
-    description: "Remove a policy from an API key",
-    inputSchema: { apikeyId: z.string(), policyId: z.string() },
   },
-  async ({ apikeyId, policyId }) => {
+});
+
+server.addTool({
+  name: "passport-apikey-remove-policy",
+  description: "Remove a policy from an API key",
+  parameters: z.object({ apikeyId: z.string(), policyId: z.string() }),
+  execute: async ({ apikeyId, policyId }) => {
     try {
       await makeSpicaRequest(
         "DELETE",
         `/passport/apikey/${apikeyId}/policy/${policyId}`
       );
-      return {
-        content: [{ type: "text", text: `✅ Policy removed from API key` }],
-      };
+      return `✅ Policy removed from API key`;
     } catch (err: any) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Failed to remove policy from apikey:\n${err.message}`,
-          },
-        ],
-      };
+      return `❌ Failed to remove policy from apikey:\n${err.message}`;
     }
-  }
-);
+  },
+});
 
 // PASSPORT: POLICIES
-server.registerTool(
-  "passport-policy-list",
-  {
-    title: "List Policies",
-    description: "Get all policies",
-    inputSchema: {},
-  },
-  async () => {
+server.addTool({
+  name: "passport-policy-list",
+  description: "Get all policies",
+  parameters: z.object({}),
+  execute: async () => {
     try {
       const response = await makeSpicaRequest("GET", "/passport/policy");
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Policies:\n${JSON.stringify(response.data, null, 2)}`,
-          },
-        ],
-      };
+      return `✅ Policies:\n${JSON.stringify(response.data, null, 2)}`;
     } catch (err: any) {
-      return {
-        content: [
-          { type: "text", text: `❌ Failed to list policies:\n${err.message}` },
-        ],
-      };
+      return `❌ Failed to list policies:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "passport-policy-get",
-  {
-    title: "Get Policy",
-    description: "Get a single policy by id",
-    inputSchema: { id: z.string() },
   },
-  async ({ id }) => {
+});
+
+server.addTool({
+  name: "passport-policy-get",
+  description: "Get a single policy by id",
+  parameters: z.object({ id: z.string() }),
+  execute: async ({ id }) => {
     try {
       const response = await makeSpicaRequest("GET", `/passport/policy/${id}`);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Policy:\n${JSON.stringify(response.data, null, 2)}`,
-          },
-        ],
-      };
+      return `✅ Policy:\n${JSON.stringify(response.data, null, 2)}`;
     } catch (err: any) {
-      return {
-        content: [
-          { type: "text", text: `❌ Failed to get policy:\n${err.message}` },
-        ],
-      };
+      return `❌ Failed to get policy:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "passport-policy-create",
-  {
-    title: "Create Policy",
-    description: "Create a new policy",
-    inputSchema: {
-      name: z.string(),
-      description: z.string(),
-      statement: z.array(
-        z.object({
-          action: z.string(),
-          module: z.string(),
-          resource: z.optional(
-            z.object({
-              include: z.optional(z.array(z.string())),
-              exclude: z.optional(z.array(z.string())),
-            })
-          ),
-        })
-      ),
-    },
   },
-  async ({ name, description, statement }) => {
+});
+
+server.addTool({
+  name: "passport-policy-create",
+  description: "Create a new policy",
+  parameters: z.object({
+    name: z.string(),
+    description: z.string(),
+    statement: z.array(
+      z.object({
+        action: z.string(),
+        module: z.string(),
+        resource: z
+          .object({
+            include: z.array(z.string()).optional(),
+            exclude: z.array(z.string()).optional(),
+          })
+          .optional(),
+      })
+    ),
+  }),
+  execute: async ({ name, description, statement }) => {
     try {
       const body = { name, description, statement };
       const response = await makeSpicaRequest("POST", "/passport/policy", body);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Policy created:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ Policy created:\n${JSON.stringify(response.data, null, 2)}`;
     } catch (err: any) {
-      return {
-        content: [
-          { type: "text", text: `❌ Failed to create policy:\n${err.message}` },
-        ],
-      };
+      return `❌ Failed to create policy:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "passport-policy-update",
-  {
-    title: "Update Policy",
-    description: "Update an existing policy",
-    inputSchema: {
-      id: z.string(),
-      name: z.optional(z.string()),
-      description: z.optional(z.string()),
-      statement: z.optional(
-        z.array(
-          z.object({
-            action: z.string(),
-            module: z.string(),
-            resource: z.optional(
-              z.object({
-                include: z.optional(z.array(z.string())),
-                exclude: z.optional(z.array(z.string())),
-              })
-            ),
-          })
-        )
-      ),
-    },
   },
-  async ({ id, ...update }) => {
+});
+
+server.addTool({
+  name: "passport-policy-update",
+  description: "Update an existing policy",
+  parameters: z.object({
+    id: z.string(),
+    name: z.string().optional(),
+    description: z.string().optional(),
+    statement: z
+      .array(
+        z.object({
+          action: z.string(),
+          module: z.string(),
+          resource: z
+            .object({
+              include: z.array(z.string()).optional(),
+              exclude: z.array(z.string()).optional(),
+            })
+            .optional(),
+        })
+      )
+      .optional(),
+  }),
+  execute: async ({ id, ...update }) => {
     try {
       const current = await makeSpicaRequest("GET", `/passport/policy/${id}`);
       const merged = { ...current.data, ...update };
@@ -1148,49 +728,28 @@ server.registerTool(
         `/passport/policy/${id}`,
         merged
       );
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Policy updated:\n${JSON.stringify(
-              response.data,
-              null,
-              2
-            )}`,
-          },
-        ],
-      };
+      return `✅ Policy updated:\n${JSON.stringify(response.data, null, 2)}`;
     } catch (err: any) {
-      return {
-        content: [
-          { type: "text", text: `❌ Failed to update policy:\n${err.message}` },
-        ],
-      };
+      return `❌ Failed to update policy:\n${err.message}`;
     }
-  }
-);
-
-server.registerTool(
-  "passport-policy-delete",
-  {
-    title: "Delete Policy",
-    description: "Delete a policy",
-    inputSchema: { id: z.string() },
   },
-  async ({ id }) => {
+});
+
+server.addTool({
+  name: "passport-policy-delete",
+  description: "Delete a policy",
+  parameters: z.object({ id: z.string() }),
+  execute: async ({ id }) => {
     try {
       await makeSpicaRequest("DELETE", `/passport/policy/${id}`);
-      return { content: [{ type: "text", text: `✅ Policy deleted` }] };
+      return `✅ Policy deleted`;
     } catch (err: any) {
-      return {
-        content: [
-          { type: "text", text: `❌ Failed to delete policy:\n${err.message}` },
-        ],
-      };
+      return `❌ Failed to delete policy:\n${err.message}`;
     }
-  }
-);
+  },
+});
 
-// Start receiving messages on stdin and sending messages on stdout
-const transport = new StdioServerTransport();
-await server.connect(transport);
+// Start the server with stdio transport
+server.start({
+  transportType: "stdio",
+});
