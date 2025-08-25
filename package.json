@@ -2,7 +2,7 @@
   "type": "module",
   "name": "spica-mcp-server",
   "version": "1.0.0",
-  "description": "MCP server for Spica integration - manage buckets, functions, and data",
+  "description": "MCP server for Spica integration with OpenAI research tools - manage buckets, functions, data, and intelligent document search",
   "main": "dist/index.js",
   "bin": {
     "spica-mcp-server": "dist/index.js"
@@ -26,7 +26,11 @@
     "model-context-protocol",
     "ai",
     "backend",
-    "database"
+    "database",
+    "openai",
+    "research",
+    "document-search",
+    "fastmcp"
   ],
   "author": "Your Name <your.email@example.com>",
   "license": "MIT",
@@ -36,7 +40,9 @@
   },
   "dependencies": {
     "axios": "^1.11.0",
+    "dotenv": "^16.4.5",
     "fastmcp": "^3.15.1",
+    "openai": "^5.15.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
