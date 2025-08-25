@@ -45,6 +45,48 @@ const server = new FastMCP({
   version: "1.0.0",
 });
 
+// WORKFLOW GUIDANCE TOOL
+server.addTool({
+  name: "help",
+  description:
+    "Get guidance on how to use this MCP server effectively with proper documentation workflow.",
+  parameters: z.object({}),
+  execute: async () => {
+    return `🚀 **Spica MCP Server - Recommended Workflow**
+
+**ALWAYS START HERE:**
+1. 🔍 **search** - Search documentation for relevant topics
+2. 🤖 **answer_question** - Get specific answers from documentation  
+3. ✅ **Execute Spica operations** - Now safely use bucket, identity, policy tools
+
+**Documentation Tools (Use First):**
+• search - Find relevant docs about APIs/functionality
+• answer_question - Get AI answers from your documentation
+• fetch - Get specific document metadata
+
+**Spica Backend Tools (Use After Documentation):**
+• bucket-* - Manage buckets and data
+• passport-identity-* - Manage users and authentication  
+• passport-policy-* - Manage permissions and access control
+• passport-apikey-* - Manage API keys
+• function-* - Manage cloud functions
+
+**⚠️ CRITICAL WORKFLOW:**
+Never use Spica tools without first consulting documentation. The search and answer_question tools contain up-to-date information about:
+- API endpoints and parameters
+- Data schemas and validation rules
+- Best practices and examples
+- Error handling and troubleshooting
+
+**💡 Example Workflow:**
+1. search("bucket creation")
+2. answer_question("how to create a bucket with proper schema")
+3. bucket-create (with proper parameters from docs)
+
+Always verify API structure and requirements before operations!`;
+  },
+});
+
 // Helper function to make Spica API requests
 async function makeSpicaRequest(method: string, endpoint: string, data?: any) {
   const baseUrl = config.spicaUrl;
@@ -93,7 +135,8 @@ async function makeSpicaRequest(method: string, endpoint: string, data?: any) {
 // BUCKET CRUD OPERATIONS
 server.addTool({
   name: "bucket-list",
-  description: "Get all buckets from Spica",
+  description:
+    "Get all buckets from Spica. 💡 Tip: Use search tool first to understand bucket API structure and available fields before listing buckets.",
   parameters: z.object({}),
   execute: async () => {
     try {
@@ -111,7 +154,8 @@ server.addTool({
 
 server.addTool({
   name: "bucket-create",
-  description: "Create a new bucket in Spica",
+  description:
+    "Create a new bucket in Spica. ⚠️ IMPORTANT: Use search + answer_question tools first to understand bucket schema, required fields, and property types before creating buckets.",
   parameters: z.object({
     title: z.string(),
     description: z.string(),
@@ -256,7 +300,8 @@ server.addTool({
 
 server.addTool({
   name: "bucket-data-create",
-  description: "Add new data to a bucket",
+  description:
+    "Add new data to a bucket. 💡 Tip: Use search + answer_question tools first to understand the bucket schema and required data structure before adding data.",
   parameters: z.object({
     bucketId: z.string(),
     data: z.record(z.any()),
@@ -347,7 +392,8 @@ server.addTool({
 // PASSPORT: IDENTITIES
 server.addTool({
   name: "passport-identity-list",
-  description: "Get all identities from Spica",
+  description:
+    "Get all identities from Spica. 💡 Tip: Use search tool first to understand identity structure and available attributes.",
   parameters: z.object({
     limit: z.number().optional(),
     skip: z.number().optional(),
@@ -397,7 +443,8 @@ server.addTool({
 
 server.addTool({
   name: "passport-identity-create",
-  description: "Create a new identity in Spica",
+  description:
+    "Create a new identity in Spica. ⚠️ IMPORTANT: Use search + answer_question tools first to understand identity schema, required fields, and attribute structure.",
   parameters: z.object({
     identifier: z.string(),
     password: z.string(),
@@ -684,7 +731,8 @@ server.addTool({
 
 server.addTool({
   name: "passport-policy-create",
-  description: "Create a new policy",
+  description:
+    "Create a new policy. ⚠️ CRITICAL: Use search + answer_question tools first to understand policy structure, statement format, and permission system before creating policies.",
   parameters: z.object({
     name: z.string(),
     description: z.string(),
@@ -768,11 +816,13 @@ server.addTool({
 server.addTool({
   name: "search",
   description:
-    "Search for documents in your vector store collection. Find relevant documents based on keywords from your curated document set.",
+    "🔍 ALWAYS USE THIS FIRST! Search for documents in your vector store collection to understand available APIs, endpoints, and functionality. You should default to calling this even if you think you already know the answer, since the documentation is always being updated. Use this before any Spica API operations to understand the correct syntax, parameters, and best practices.",
   parameters: z.object({
     query: z
       .string()
-      .describe("Search query string to find relevant documents"),
+      .describe(
+        "Search query string to find relevant documents about Spica APIs, endpoints, or functionality"
+      ),
   }),
   execute: async ({ query }) => {
     if (!query || !query.trim()) {
@@ -805,7 +855,11 @@ server.addTool({
 
       return `✅ Found ${
         results.length
-      } files in vector store:\n${JSON.stringify({ results }, null, 2)}`;
+      } files in vector store:\n${JSON.stringify(
+        { results },
+        null,
+        2
+      )}\n\n💡 Next step: Use answer_question tool with your specific query to get detailed information from these documents.`;
     } catch (err: any) {
       return `❌ Error searching vector store: ${err.message}`;
     }
@@ -815,7 +869,7 @@ server.addTool({
 server.addTool({
   name: "fetch",
   description:
-    "Retrieve complete document content by ID from your document collection.",
+    "📄 Retrieve document metadata by ID from your documentation collection. Use this to get basic information about a specific document after using the search tool to find relevant documents.",
   parameters: z.object({
     id: z.string().describe("File ID from your document collection (file-xxx)"),
   }),
@@ -848,7 +902,7 @@ server.addTool({
         result,
         null,
         2
-      )}`;
+      )}\n\n💡 To get actual content and answers from this document, use the answer_question tool.`;
     } catch (err: any) {
       return `❌ Could not fetch document with ID ${id}: ${err.message}`;
     }
@@ -858,9 +912,13 @@ server.addTool({
 server.addTool({
   name: "answer_question",
   description:
-    "Get an AI-powered answer to your question based on your document collection. This will search your documents and use GPT to provide comprehensive answers.",
+    "🤖 Get AI-powered answers from your documentation collection. Use this after searching to get specific information about Spica APIs, endpoints, parameters, examples, and best practices. Always consult documentation before performing any Spica operations.",
   parameters: z.object({
-    query: z.string().describe("Your question or research query"),
+    query: z
+      .string()
+      .describe(
+        "Your specific question about Spica APIs, functionality, or implementation details"
+      ),
   }),
   execute: async ({ query }) => {
     if (!query || !query.trim()) {
