@@ -33,4 +33,3 @@ if (!fs.existsSync(dist)) {
   process.exit(1);
 }
 walk(dist);
-console.log("post-build: added .js extensions to local imports in dist");

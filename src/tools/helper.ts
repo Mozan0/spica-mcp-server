@@ -37,8 +37,12 @@ export function registerHelperTools(server: any) {
 
         **STEP 2: GET SPECIFIC ANSWERS** 
         - Use "answer_question" tool with your specific question
-        - This tool will automatically search the docs first, then fetch relevant content to provide accurate answers
-        - Example: "How do I create a bucket with validation rules?"
+        - If the answer requires precise content from a document (examples, exact fields, code snippets), call the "fetch" tool with the document id returned by "search" to retrieve that document's metadata/content
+        - The recommended pattern:
+          1) search(...) -> get candidate documents (ids)
+          2) fetch(document_id) -> retrieve metadata/preview
+          3) answer_question(...) -> include fetched ids or previews for a grounded answer
+        - Example: "How do I create a bucket with validation rules? Use fetch(file-xyz) if you need the exact JSON schema." 
 
         **STEP 3: EXECUTE SPICA OPERATIONS**
         - Only after consulting documentation, use bucket-*, passport-*, function-* tools
@@ -57,8 +61,9 @@ export function registerHelperTools(server: any) {
 
         **EXAMPLE WORKFLOW:**
         1. search("bucket creation validation")
-        2. answer_question("What are the required fields for creating a bucket?")
-        3. bucket-create (with proper parameters from docs)
+        2. fetch(document_id) -> retrieve metadata/preview
+        3. answer_question("What are the required fields for creating a bucket?")
+        4. if needed bucket-create etc. (with proper parameters from docs)
 
         **Remember: Documentation first, operations second!**`;
     },
