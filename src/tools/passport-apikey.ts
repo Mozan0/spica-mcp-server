@@ -11,9 +11,9 @@ export function registerPassportApikeyTools(
     execute: async () => {
       try {
         const response = await makeSpicaRequest("GET", "/passport/apikey");
-        return `✅ API keys:\n${JSON.stringify(response.data, null, 2)}`;
+        return `API keys:\n${JSON.stringify(response.data, null, 2)}`;
       } catch (err: any) {
-        return `❌ Failed to list apikeys:\n${err.message}`;
+        return `Failed to list apikeys:\n${err.message}`;
       }
     },
   });
@@ -28,9 +28,9 @@ export function registerPassportApikeyTools(
           "GET",
           `/passport/apikey/${id}`
         );
-        return `✅ API key:\n${JSON.stringify(response.data, null, 2)}`;
+        return `API key:\n${JSON.stringify(response.data, null, 2)}`;
       } catch (err: any) {
-        return `❌ Failed to get apikey:\n${err.message}`;
+        return `Failed to get apikey:\n${err.message}`;
       }
     },
   });
@@ -62,18 +62,18 @@ export function registerPassportApikeyTools(
                 `/passport/apikey/${created._id}/policy/${policyId}`
               );
             } catch (innerErr: any) {
-              return `⚠️ API key created but failed to assign policy ${policyId}:\n${innerErr.message}`;
+              return `API key created but failed to assign policy ${policyId}:\n${innerErr.message}`;
             }
           }
         }
 
-        return `✅ API key created successfully:\n${JSON.stringify(
+        return `API key created successfully:\n${JSON.stringify(
           created,
           null,
           2
         )}`;
       } catch (err: any) {
-        return `❌ Failed to create apikey:\n${err.message}`;
+        return `Failed to create apikey:\n${err.message}`;
       }
     },
   });
@@ -96,9 +96,9 @@ export function registerPassportApikeyTools(
           `/passport/apikey/${id}`,
           merged
         );
-        return `✅ API key updated:\n${JSON.stringify(response.data, null, 2)}`;
+        return `API key updated:\n${JSON.stringify(response.data, null, 2)}`;
       } catch (err: any) {
-        return `❌ Failed to update apikey:\n${err.message}`;
+        return `Failed to update apikey:\n${err.message}`;
       }
     },
   });
@@ -110,9 +110,9 @@ export function registerPassportApikeyTools(
     execute: async ({ id }: any) => {
       try {
         await makeSpicaRequest("DELETE", `/passport/apikey/${id}`);
-        return `✅ API key deleted`;
+        return `API key deleted`;
       } catch (err: any) {
-        return `❌ Failed to delete apikey:\n${err.message}`;
+        return `Failed to delete apikey:\n${err.message}`;
       }
     },
   });
@@ -127,13 +127,13 @@ export function registerPassportApikeyTools(
           "PUT",
           `/passport/apikey/${apikeyId}/policy/${policyId}`
         );
-        return `✅ Policy assigned to API key:\n${JSON.stringify(
+        return `Policy assigned to API key:\n${JSON.stringify(
           response.data,
           null,
           2
         )}`;
       } catch (err: any) {
-        return `❌ Failed to assign policy to apikey:\n${err.message}`;
+        return `Failed to assign policy to apikey:\n${err.message}`;
       }
     },
   });
@@ -148,9 +148,9 @@ export function registerPassportApikeyTools(
           "DELETE",
           `/passport/apikey/${apikeyId}/policy/${policyId}`
         );
-        return `✅ Policy removed from API key`;
+        return `Policy removed from API key`;
       } catch (err: any) {
-        return `❌ Failed to remove policy from apikey:\n${err.message}`;
+        return `Failed to remove policy from apikey:\n${err.message}`;
       }
     },
   });

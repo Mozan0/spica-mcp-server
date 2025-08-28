@@ -4,6 +4,52 @@ A Model Context Protocol (MCP) server for interacting with Spica instances. This
 
 ## Installation
 
+### For VS Code GitHub Copilot Users
+
+**Prerequisites**:
+
+- GitHub Copilot extension installed
+- MCP-compatible extension (search for "MCP Client" or "Model Context Protocol" in VS Code marketplace)
+
+**Note**: MCP support in VS Code is evolving. Different MCP extensions may use slightly different configuration formats. The configuration above works with most standard MCP clients.
+
+1. **Install the MCP extension**: Install a compatible MCP extension in VS Code (like "MCP Client" or similar)
+
+2. **Add MCP server configuration** to your VS Code settings. Open your VS Code settings (JSON) and add:
+
+```json
+{
+  "mcp.servers": {
+    "spica-mcp-server": {
+      "command": "node",
+      "args": ["/path/to/your/spica-mcp/dist/index.js"],
+      "env": {
+        "SPICA_URL": "http://localhost:4500",
+        "SPICA_API_KEY": "YOUR_SPICA_API_KEY_HERE"
+      }
+    }
+  }
+}
+```
+
+**Alternative method using npm:**
+
+```json
+{
+  "mcp.servers": {
+    "spica-mcp-server": {
+      "command": "npm",
+      "args": ["run", "start"],
+      "cwd": "/path/to/your/spica-mcp",
+      "env": {
+        "SPICA_URL": "http://localhost:4500",
+        "SPICA_API_KEY": "YOUR_SPICA_API_KEY_HERE"
+      }
+    }
+  }
+}
+```
+
 ### For Claude Desktop Users
 
 Add this configuration to your Claude Desktop config file (`claude_desktop_config.json`):
@@ -31,6 +77,18 @@ npm install
 npm run build
 ```
 
+### Setup
+
+1. **Copy the example settings**:
+
+   ```bash
+   cp .vscode/settings.json
+   ```
+
+2. **Edit the settings**: Update `SPICA_URL` and `SPICA_API_KEY` in `.vscode/settings.json`
+
+3. **Install recommended extensions**: VS Code will automatically suggest installing GitHub Copilot extensions
+
 ## Configuration
 
 The server is configured entirely through environment variables in your Claude Desktop configuration:
@@ -53,20 +111,37 @@ The server is configured entirely through environment variables in your Claude D
 
 ## Configuration File Locations
 
+### Claude Desktop
+
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 - **Linux**: `~/.config/claude/claude_desktop_config.json`
 
-## How to Use with Claude
+### VS Code
+
+- **Settings JSON**: Open VS Code → Preferences → Settings → Open Settings (JSON)
+- **Workspace Settings**: `.vscode/settings.json` in your project root (for project-specific configuration)
+
+## How to Use
+
+### With Claude Desktop
 
 Once configured, you can use natural language prompts with Claude. The server includes a **documentation-first workflow** that encourages searching documentation before performing operations.
+
+### With VS Code GitHub Copilot
+
+After installing an MCP extension and configuring the server, you can:
+
+1. Use the Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`) to access MCP commands
+2. Use Copilot Chat with MCP tools integrated
+3. Access Spica management tools directly from your development environment
 
 ### Recommended Workflow
 
 1. **Always start with documentation**: Use `search` and `answer_question` tools
 2. **Then perform operations**: Use Spica tools with proper understanding
 
-### Example Session:
+### Example Session (Claude):
 
 ```
 Human: I want to create a new bucket for user profiles
@@ -76,6 +151,17 @@ Claude: I'll help you create a user profiles bucket. Let me first search the doc
 [Uses search tool to find bucket documentation]
 [Uses answer_question tool to get specific guidance]
 [Then uses bucket-create tool with proper parameters]
+```
+
+### Example Session (VS Code Copilot):
+
+```
+// In VS Code, you can use Copilot Chat or MCP commands
+// Example: Using Command Palette
+1. Press Cmd+Shift+P (Mac) or Ctrl+Shift+P (Windows/Linux)
+2. Type "MCP: Execute Tool"
+3. Select "bucket-list" to see all buckets
+4. Or use Copilot Chat: "@mcp create a user bucket with name, email, age fields"
 ```
 
 ### Example Prompts:
@@ -187,18 +273,38 @@ This prevents errors and ensures you're following current best practices.
 
 ## Troubleshooting
 
-### MCP Server Not Connecting to Copilot
+### VS Code GitHub Copilot Issues
 
-1. **Check VS Code Settings**: Make sure MCP is enabled in Copilot settings
-2. **Restart VS Code**: After changing MCP configuration, restart VS Code completely
-3. **Check Server Status**: Run `npm run dev` manually to ensure the server starts without errors
-4. **Check Logs**: Look at VS Code Developer Console (Help > Toggle Developer Tools) for MCP-related errors
+1. **MCP Server Not Connecting**:
 
-### Common Issues
+   - Ensure you have an MCP-compatible extension installed
+   - Check that the server path in settings.json is correct and absolute
+   - Restart VS Code after changing MCP configuration
+   - Verify the server builds successfully: `npm run build`
+
+2. **Check Server Status**:
+
+   - Run `npm run dev` manually to ensure the server starts without errors
+   - Check VS Code Developer Console (Help > Toggle Developer Tools) for MCP-related errors
+
+3. **Extension Requirements**:
+   - Install "MCP Client" or compatible MCP extension from VS Code marketplace
+   - Ensure GitHub Copilot extension is installed and active
+   - Check that both extensions are compatible with each other
+
+### Claude Desktop Issues
+
+1. **MCP Server Not Connecting to Claude**:
+   - Check that `start-mcp.sh` has execute permissions: `chmod +x start-mcp.sh`
+   - Verify the path in `claude_desktop_config.json` is correct
+   - Restart Claude Desktop after configuration changes
+
+### Common Issues (Both Platforms)
 
 - **Authentication Errors**: Make sure your Spica API key is valid and not expired
 - **Network Issues**: Ensure your Spica instance is running and accessible
 - **Permission Errors**: Verify your API key has the required permissions for bucket and function operations
+- **Environment Variables**: Double-check that `SPICA_URL` and `SPICA_API_KEY` are set correctly
 
 ## Running the Server
 

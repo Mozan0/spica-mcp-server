@@ -3,27 +3,25 @@ import { z } from "zod";
 export function registerBucketTools(server: any, makeSpicaRequest: any) {
   server.addTool({
     name: "bucket-list",
-    description:
-      "Get all buckets from Spica. 💡 Tip: Use search tool first to understand bucket API structure and available fields before listing buckets.",
+    description: "Get all buckets from Spica.",
     parameters: z.object({}),
     execute: async () => {
       try {
         const response = await makeSpicaRequest("GET", "/bucket");
-        return `✅ Buckets retrieved successfully:\n${JSON.stringify(
+        return `Buckets retrieved successfully:\n${JSON.stringify(
           response.data,
           null,
           2
         )}`;
       } catch (err: any) {
-        return `❌ Failed to list buckets:\n${err.message}`;
+        return `Failed to list buckets:\n${err.message}`;
       }
     },
   });
 
   server.addTool({
     name: "bucket-create",
-    description:
-      "Create a new bucket in Spica. ⚠️ IMPORTANT: Use search + answer_question tools first to understand bucket schema, required fields, and property types before creating buckets.",
+    description: "Create a new bucket in Spica.",
     parameters: z.object({
       title: z.string(),
       description: z.string(),
@@ -63,13 +61,13 @@ export function registerBucketTools(server: any, makeSpicaRequest: any) {
         };
 
         const response = await makeSpicaRequest("POST", "/bucket", bucketData);
-        return `✅ Bucket created successfully:\n${JSON.stringify(
+        return `Bucket created successfully:\n${JSON.stringify(
           response.data,
           null,
           2
         )}`;
       } catch (err: any) {
-        return `❌ Failed to create bucket:\n${err.message}`;
+        return `Failed to create bucket:\n${err.message}`;
       }
     },
   });
@@ -108,13 +106,13 @@ export function registerBucketTools(server: any, makeSpicaRequest: any) {
           `/bucket/${bucketId}`,
           mergedData
         );
-        return `✅ Bucket updated successfully:\n${JSON.stringify(
+        return `Bucket updated successfully:\n${JSON.stringify(
           response.data,
           null,
           2
         )}`;
       } catch (err: any) {
-        return `❌ Failed to update bucket:\n${err.message}`;
+        return `Failed to update bucket:\n${err.message}`;
       }
     },
   });
@@ -127,13 +125,10 @@ export function registerBucketTools(server: any, makeSpicaRequest: any) {
     }),
     execute: async ({ bucketId }: any) => {
       try {
-        const response = await makeSpicaRequest(
-          "DELETE",
-          `/bucket/${bucketId}`
-        );
-        return `✅ Bucket deleted successfully`;
+        await makeSpicaRequest("DELETE", `/bucket/${bucketId}`);
+        return `Bucket deleted successfully`;
       } catch (err: any) {
-        return `❌ Failed to delete bucket:\n${err.message}`;
+        return `Failed to delete bucket:\n${err.message}`;
       }
     },
   });

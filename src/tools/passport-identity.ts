@@ -6,8 +6,7 @@ export function registerPassportIdentityTools(
 ) {
   server.addTool({
     name: "passport-identity-list",
-    description:
-      "Get all identities from Spica. 💡 Tip: Use search tool first to understand identity structure and available attributes.",
+    description: "Get all identities from Spica. ",
     parameters: z.object({
       limit: z.number().optional(),
       skip: z.number().optional(),
@@ -23,13 +22,13 @@ export function registerPassportIdentityTools(
         if (params.toString()) endpoint += `?${params.toString()}`;
 
         const response = await makeSpicaRequest("GET", endpoint);
-        return `✅ Identities retrieved successfully:\n${JSON.stringify(
+        return `Identities retrieved successfully:\n${JSON.stringify(
           response.data,
           null,
           2
         )}`;
       } catch (err: any) {
-        return `❌ Failed to list identities:\n${err.message}`;
+        return `Failed to list identities:\n${err.message}`;
       }
     },
   });
@@ -44,21 +43,20 @@ export function registerPassportIdentityTools(
           "GET",
           `/passport/identity/${id}`
         );
-        return `✅ Identity retrieved successfully:\n${JSON.stringify(
+        return `Identity retrieved successfully:\n${JSON.stringify(
           response.data,
           null,
           2
         )}`;
       } catch (err: any) {
-        return `❌ Failed to get identity:\n${err.message}`;
+        return `Failed to get identity:\n${err.message}`;
       }
     },
   });
 
   server.addTool({
     name: "passport-identity-create",
-    description:
-      "Create a new identity in Spica. ⚠️ IMPORTANT: Use search + answer_question tools first to understand identity schema, required fields, and attribute structure.",
+    description: "Create a new identity in Spica.",
     parameters: z.object({
       identifier: z.string(),
       password: z.string(),
@@ -73,13 +71,13 @@ export function registerPassportIdentityTools(
           "/passport/identity",
           body
         );
-        return `✅ Identity created successfully:\n${JSON.stringify(
+        return `Identity created successfully:\n${JSON.stringify(
           response.data,
           null,
           2
         )}`;
       } catch (err: any) {
-        return `❌ Failed to create identity:\n${err.message}`;
+        return `Failed to create identity:\n${err.message}`;
       }
     },
   });
@@ -105,13 +103,13 @@ export function registerPassportIdentityTools(
           `/passport/identity/${id}`,
           merged
         );
-        return `✅ Identity updated successfully:\n${JSON.stringify(
+        return `Identity updated successfully:\n${JSON.stringify(
           response.data,
           null,
           2
         )}`;
       } catch (err: any) {
-        return `❌ Failed to update identity:\n${err.message}`;
+        return `Failed to update identity:\n${err.message}`;
       }
     },
   });
@@ -122,13 +120,10 @@ export function registerPassportIdentityTools(
     parameters: z.object({ id: z.string() }),
     execute: async ({ id }: any) => {
       try {
-        const response = await makeSpicaRequest(
-          "DELETE",
-          `/passport/identity/${id}`
-        );
-        return `✅ Identity deleted successfully`;
+        await makeSpicaRequest("DELETE", `/passport/identity/${id}`);
+        return `Identity deleted successfully`;
       } catch (err: any) {
-        return `❌ Failed to delete identity:\n${err.message}`;
+        return `Failed to delete identity:\n${err.message}`;
       }
     },
   });
@@ -143,9 +138,9 @@ export function registerPassportIdentityTools(
           "GET",
           "/passport/identity/verify"
         );
-        return `✅ Token verified:\n${JSON.stringify(response.data, null, 2)}`;
+        return `Token verified:\n${JSON.stringify(response.data, null, 2)}`;
       } catch (err: any) {
-        return `❌ Token verify failed:\n${err.message}`;
+        return `Token verify failed:\n${err.message}`;
       }
     },
   });
@@ -160,13 +155,9 @@ export function registerPassportIdentityTools(
           identifier,
           password,
         });
-        return `✅ Login successful:\n${JSON.stringify(
-          response.data,
-          null,
-          2
-        )}`;
+        return `Login successful:\n${JSON.stringify(response.data, null, 2)}`;
       } catch (err: any) {
-        return `❌ Login failed:\n${err.message}`;
+        return `Login failed:\n${err.message}`;
       }
     },
   });

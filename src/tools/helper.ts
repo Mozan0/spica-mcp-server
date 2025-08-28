@@ -2,33 +2,13 @@ import { z } from "zod";
 
 export function registerHelperTools(server: any) {
   server.addTool({
-    name: "help",
-    description:
-      "Get guidance on how to use this MCP server effectively with proper documentation workflow.",
-    parameters: z.object({}),
-    execute: async () => {
-      return `🚀 **Spica MCP Server - Setup & Workflow Guide**
-        **📋 REQUIRED CONFIGURATION:**
-        Add these environment variables to your Claude Desktop config:
-        \`\`\`json
-        "spica-mcp-server": {
-        "command": "/path/to/spica-mcp/start-mcp.sh",
-        "env": {
-            "SPICA_URL": "http://localhost:4500",
-            "SPICA_API_KEY": "YOUR_SPICA_API_KEY_HERE"
-        }
-        }
-        \`\`\``;
-    },
-  });
-
-  server.addTool({
     name: "workflow-guide",
     description:
-      "MANDATORY FIRST STEP: Always use this to understand the required documentation-first workflow before performing ANY Spica operations. This tool explains why and how to use search/answer_question tools first.",
+      "MANDATORY FIRST STEP: Always use this to understand the required documentation-first workflow before performing ANY Spica operations. This tool explains why and how to use search/fetch tools first.",
     parameters: z.object({}),
     execute: async () => {
-      return `**WORKFLOW - READ THIS FIRST**
+      return `
+        **WORKFLOW - READ THIS FIRST**
 
         **STEP 1: SEARCH DOCUMENTATION**
         - Use "search" tool with relevant keywords (e.g., "bucket creation", "identity management", "API endpoints")
@@ -36,21 +16,22 @@ export function registerHelperTools(server: any) {
         - Never skip this step - documentation is constantly updated
 
         **STEP 2: GET SPECIFIC ANSWERS** 
-        - Use "answer_question" tool with your specific question
         - If the answer requires precise content from a document (examples, exact fields, code snippets), call the "fetch" tool with the document id returned by "search" to retrieve that document's metadata/content
         - The recommended pattern:
           1) search(...) -> get candidate documents (ids)
           2) fetch(document_id) -> retrieve metadata/preview
-          3) answer_question(...) -> include fetched ids or previews for a grounded answer
         - Example: "How do I create a bucket with validation rules? Use fetch(file-xyz) if you need the exact JSON schema." 
 
         **STEP 3: EXECUTE SPICA OPERATIONS**
         - Only after consulting documentation, use bucket-*, passport-*, function-* tools
         - Use the exact parameters and structure learned from documentation
 
+        **STEP 4: PRIORITIZE DEVKIT**
+        - Use @spica/devkit packages over rest api https requests whenever possible for the case
+
         **NEVER DO THIS:**
         - Don't use Spica tools without first checking documentation
-        - Don't assume API structure - always verify with search/answer_question
+        - Don't assume API structure - always verify with search/fetch
         - Don't guess parameter names or required fields
 
         **WHY THIS MATTERS:**
@@ -62,10 +43,10 @@ export function registerHelperTools(server: any) {
         **EXAMPLE WORKFLOW:**
         1. search("bucket creation validation")
         2. fetch(document_id) -> retrieve metadata/preview
-        3. answer_question("What are the required fields for creating a bucket?")
+        3. if needed answer_question("What are the required fields for creating a bucket?")
         4. if needed bucket-create etc. (with proper parameters from docs)
 
-        **Remember: Documentation first, operations second!**`;
+        `;
     },
   });
 }

@@ -31,8 +31,7 @@ export function registerBucketDataTools(server: any, makeSpicaRequest: any) {
 
   server.addTool({
     name: "bucket-data-create",
-    description:
-      "Add new data to a bucket. 💡 Tip: Use search + answer_question tools first to understand the bucket schema and required data structure before adding data.",
+    description: "Add new data to a bucket.",
     parameters: z.object({
       bucketId: z.string(),
       data: z.record(z.any()),
@@ -44,13 +43,13 @@ export function registerBucketDataTools(server: any, makeSpicaRequest: any) {
           `/bucket/${bucketId}/data`,
           data
         );
-        return `✅ Bucket data created successfully:\n${JSON.stringify(
+        return `Bucket data created successfully:\n${JSON.stringify(
           response.data,
           null,
           2
         )}`;
       } catch (err: any) {
-        return `❌ Failed to create bucket data:\n${err.message}`;
+        return `Failed to create bucket data:\n${err.message}`;
       }
     },
   });
@@ -70,13 +69,13 @@ export function registerBucketDataTools(server: any, makeSpicaRequest: any) {
           `/bucket/${bucketId}/data/${dataId}`,
           data
         );
-        return `✅ Bucket data updated successfully:\n${JSON.stringify(
+        return `Bucket data updated successfully:\n${JSON.stringify(
           response.data,
           null,
           2
         )}`;
       } catch (err: any) {
-        return `❌ Failed to update bucket data:\n${err.message}`;
+        return `Failed to update bucket data:\n${err.message}`;
       }
     },
   });
@@ -94,9 +93,9 @@ export function registerBucketDataTools(server: any, makeSpicaRequest: any) {
           "DELETE",
           `/bucket/${bucketId}/data/${dataId}`
         );
-        return `✅ Bucket data deleted successfully`;
+        return `Bucket data deleted successfully`;
       } catch (err: any) {
-        return `❌ Failed to delete bucket data:\n${err.message}`;
+        return `Failed to delete bucket data:\n${err.message}`;
       }
     },
   });

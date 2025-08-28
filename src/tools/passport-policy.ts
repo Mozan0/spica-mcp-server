@@ -11,9 +11,9 @@ export function registerPassportPolicyTools(
     execute: async () => {
       try {
         const response = await makeSpicaRequest("GET", "/passport/policy");
-        return `✅ Policies:\n${JSON.stringify(response.data, null, 2)}`;
+        return `Policies:\n${JSON.stringify(response.data, null, 2)}`;
       } catch (err: any) {
-        return `❌ Failed to list policies:\n${err.message}`;
+        return `Failed to list policies:\n${err.message}`;
       }
     },
   });
@@ -28,17 +28,16 @@ export function registerPassportPolicyTools(
           "GET",
           `/passport/policy/${id}`
         );
-        return `✅ Policy:\n${JSON.stringify(response.data, null, 2)}`;
+        return `Policy:\n${JSON.stringify(response.data, null, 2)}`;
       } catch (err: any) {
-        return `❌ Failed to get policy:\n${err.message}`;
+        return `Failed to get policy:\n${err.message}`;
       }
     },
   });
 
   server.addTool({
     name: "passport-policy-create",
-    description:
-      "Create a new policy. ⚠️ CRITICAL: Use search + answer_question tools first to understand policy structure, statement format, and permission system before creating policies.",
+    description: "Create a new policy. ",
     parameters: z.object({
       name: z.string(),
       description: z.string(),
@@ -63,9 +62,9 @@ export function registerPassportPolicyTools(
           "/passport/policy",
           body
         );
-        return `✅ Policy created:\n${JSON.stringify(response.data, null, 2)}`;
+        return ` Policy created:\n${JSON.stringify(response.data, null, 2)}`;
       } catch (err: any) {
-        return `❌ Failed to create policy:\n${err.message}`;
+        return `Failed to create policy:\n${err.message}`;
       }
     },
   });
@@ -101,9 +100,9 @@ export function registerPassportPolicyTools(
           `/passport/policy/${id}`,
           merged
         );
-        return `✅ Policy updated:\n${JSON.stringify(response.data, null, 2)}`;
+        return `Policy updated:\n${JSON.stringify(response.data, null, 2)}`;
       } catch (err: any) {
-        return `❌ Failed to update policy:\n${err.message}`;
+        return `Failed to update policy:\n${err.message}`;
       }
     },
   });
@@ -115,9 +114,9 @@ export function registerPassportPolicyTools(
     execute: async ({ id }: any) => {
       try {
         await makeSpicaRequest("DELETE", `/passport/policy/${id}`);
-        return `✅ Policy deleted`;
+        return `Policy deleted`;
       } catch (err: any) {
-        return `❌ Failed to delete policy:\n${err.message}`;
+        return `Failed to delete policy:\n${err.message}`;
       }
     },
   });
