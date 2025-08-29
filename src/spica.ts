@@ -10,7 +10,7 @@ export async function makeSpicaRequest(
 
   if (!baseUrl || !authKey) {
     throw new Error(
-      "Spica URL and API key must be configured in Claude Desktop config. Please set SPICA_URL and SPICA_API_KEY environment variables in your claude_desktop_config.json file."
+      "Spica URL and API key must be configured in MCP setup config. Please set SPICA_URL and SPICA_API_KEY environment variables in your setup."
     );
   }
 
