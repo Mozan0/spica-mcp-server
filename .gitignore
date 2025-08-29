@@ -20,3 +20,5 @@ pnpm-debug.log*
 
 # VSCode settings
 .vscode/
+
+.DS_Store
