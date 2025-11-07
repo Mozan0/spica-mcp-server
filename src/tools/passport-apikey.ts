@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ApiKey } from "../types/index.js";
 
 export function registerPassportApikeyTools(
   server: any,
@@ -8,7 +9,7 @@ export function registerPassportApikeyTools(
     name: "passport-apikey-list",
     description: "Get all API keys",
     parameters: z.object({}),
-    execute: async () => {
+    execute: async (): Promise<string> => {
       try {
         const response = await makeSpicaRequest("GET", "/passport/apikey");
         return `API keys:\n${JSON.stringify(response.data, null, 2)}`;
@@ -22,7 +23,7 @@ export function registerPassportApikeyTools(
     name: "passport-apikey-get",
     description: "Get a single API key by id",
     parameters: z.object({ id: z.string() }),
-    execute: async ({ id }: any) => {
+    execute: async ({ id }: { id: string }): Promise<string> => {
       try {
         const response = await makeSpicaRequest(
           "GET",
@@ -44,9 +45,19 @@ export function registerPassportApikeyTools(
       active: z.boolean().optional(),
       policies: z.array(z.string()).optional(),
     }),
-    execute: async ({ name, description, active = true, policies }: any) => {
+    execute: async ({
+      name,
+      description,
+      active = true,
+      policies,
+    }: {
+      name: string;
+      description?: string;
+      active?: boolean;
+      policies?: string[];
+    }): Promise<string> => {
       try {
-        const body: any = { name, description, active };
+        const body: ApiKey = { name, description, active };
         const response = await makeSpicaRequest(
           "POST",
           "/passport/apikey",
@@ -87,10 +98,25 @@ export function registerPassportApikeyTools(
       description: z.string().optional(),
       active: z.boolean().optional(),
     }),
-    execute: async ({ id, ...update }: any) => {
+    execute: async ({
+      id,
+      name,
+      description,
+      active,
+    }: {
+      id: string;
+      name?: string;
+      description?: string;
+      active?: boolean;
+    }): Promise<string> => {
       try {
         const current = await makeSpicaRequest("GET", `/passport/apikey/${id}`);
-        const merged = { ...current.data, ...update };
+        const update: Partial<ApiKey> = {};
+        if (name !== undefined) update.name = name;
+        if (description !== undefined) update.description = description;
+        if (active !== undefined) update.active = active;
+
+        const merged: ApiKey = { ...current.data, ...update };
         const response = await makeSpicaRequest(
           "PUT",
           `/passport/apikey/${id}`,
@@ -107,7 +133,7 @@ export function registerPassportApikeyTools(
     name: "passport-apikey-delete",
     description: "Delete an API key",
     parameters: z.object({ id: z.string() }),
-    execute: async ({ id }: any) => {
+    execute: async ({ id }: { id: string }): Promise<string> => {
       try {
         await makeSpicaRequest("DELETE", `/passport/apikey/${id}`);
         return `API key deleted`;
@@ -121,7 +147,13 @@ export function registerPassportApikeyTools(
     name: "passport-apikey-assign-policy",
     description: "Assign a policy to an existing API key",
     parameters: z.object({ apikeyId: z.string(), policyId: z.string() }),
-    execute: async ({ apikeyId, policyId }: any) => {
+    execute: async ({
+      apikeyId,
+      policyId,
+    }: {
+      apikeyId: string;
+      policyId: string;
+    }): Promise<string> => {
       try {
         const response = await makeSpicaRequest(
           "PUT",
@@ -142,7 +174,13 @@ export function registerPassportApikeyTools(
     name: "passport-apikey-remove-policy",
     description: "Remove a policy from an API key",
     parameters: z.object({ apikeyId: z.string(), policyId: z.string() }),
-    execute: async ({ apikeyId, policyId }: any) => {
+    execute: async ({
+      apikeyId,
+      policyId,
+    }: {
+      apikeyId: string;
+      policyId: string;
+    }): Promise<string> => {
       try {
         await makeSpicaRequest(
           "DELETE",

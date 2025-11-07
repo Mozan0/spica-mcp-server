@@ -4,7 +4,7 @@ node_modules/
 # Output directories
 dist/
 build/
-
+src/schemas/
 # Logs
 npm-debug.log*
 yarn-debug.log*

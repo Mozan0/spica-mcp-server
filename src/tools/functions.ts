@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { Function as SpicaFunction } from "../types/index.js";
+import { functionSchema } from "../types/zod-schemas.js";
 
 export function registerFunctionTools(server: any, makeSpicaRequest: any) {
   server.addTool({
@@ -23,7 +25,7 @@ export function registerFunctionTools(server: any, makeSpicaRequest: any) {
     name: "function-show",
     description: "Get function details by id",
     parameters: z.object({ id: z.string() }),
-    execute: async (params: { id: string }) => {
+    execute: async (params: { id: string }): Promise<string> => {
       try {
         const response = await makeSpicaRequest(
           "GET",
@@ -40,8 +42,8 @@ export function registerFunctionTools(server: any, makeSpicaRequest: any) {
     name: "function-create",
     description:
       "Create a new function (body should match Spica Function structure)",
-    parameters: z.object({ data: z.any() }),
-    execute: async (params: { data: any }) => {
+    parameters: z.object({ data: functionSchema }),
+    execute: async (params: { data: SpicaFunction }): Promise<string> => {
       try {
         const response = await makeSpicaRequest(
           "POST",
@@ -59,8 +61,11 @@ export function registerFunctionTools(server: any, makeSpicaRequest: any) {
   server.addTool({
     name: "function-update",
     description: "Update function by id (partial update using PATCH)",
-    parameters: z.object({ id: z.string(), data: z.any() }),
-    execute: async (params: { id: string; data: any }) => {
+    parameters: z.object({ id: z.string(), data: functionSchema.partial() }),
+    execute: async (params: {
+      id: string;
+      data: Partial<SpicaFunction>;
+    }): Promise<string> => {
       try {
         const response = await makeSpicaRequest(
           "PATCH",
@@ -78,7 +83,7 @@ export function registerFunctionTools(server: any, makeSpicaRequest: any) {
     name: "function-delete",
     description: "Delete function by id",
     parameters: z.object({ id: z.string() }),
-    execute: async (params: { id: string }) => {
+    execute: async (params: { id: string }): Promise<string> => {
       try {
         await makeSpicaRequest("DELETE", `/function/${params.id}`);
         return `Function ${params.id} deleted`;
@@ -92,7 +97,7 @@ export function registerFunctionTools(server: any, makeSpicaRequest: any) {
     name: "function-get-code",
     description: "Get function code (index) by id",
     parameters: z.object({ id: z.string() }),
-    execute: async (params: { id: string }) => {
+    execute: async (params: { id: string }): Promise<string> => {
       try {
         const response = await makeSpicaRequest(
           "GET",
@@ -113,7 +118,7 @@ export function registerFunctionTools(server: any, makeSpicaRequest: any) {
     name: "function-update-code",
     description: "Update function code (index) by id - pass { index: string }",
     parameters: z.object({ id: z.string(), index: z.string() }),
-    execute: async (params: { id: string; index: string }) => {
+    execute: async (params: { id: string; index: string }): Promise<string> => {
       try {
         const body = { index: params.index };
         const response = await makeSpicaRequest(
@@ -136,7 +141,7 @@ export function registerFunctionTools(server: any, makeSpicaRequest: any) {
     name: "function-list-dependencies",
     description: "List dependencies for a function",
     parameters: z.object({ id: z.string() }),
-    execute: async (params: { id: string }) => {
+    execute: async (params: { id: string }): Promise<string> => {
       try {
         const response = await makeSpicaRequest(
           "GET",
@@ -153,7 +158,10 @@ export function registerFunctionTools(server: any, makeSpicaRequest: any) {
     name: "function-add-dependencies",
     description: 'Add dependencies to a function (pass { name: ["pkg", ...] })',
     parameters: z.object({ id: z.string(), name: z.array(z.string()) }),
-    execute: async (params: { id: string; name: string[] }) => {
+    execute: async (params: {
+      id: string;
+      name: string[];
+    }): Promise<string> => {
       try {
         const body = { name: params.name };
         const response = await makeSpicaRequest(
@@ -172,7 +180,10 @@ export function registerFunctionTools(server: any, makeSpicaRequest: any) {
     name: "function-delete-dependency",
     description: "Delete a dependency from a function by package name",
     parameters: z.object({ id: z.string(), packageName: z.string() }),
-    execute: async (params: { id: string; packageName: string }) => {
+    execute: async (params: {
+      id: string;
+      packageName: string;
+    }): Promise<string> => {
       try {
         await makeSpicaRequest(
           "DELETE",
@@ -200,7 +211,15 @@ export function registerFunctionTools(server: any, makeSpicaRequest: any) {
       limit: z.string().optional(),
       skip: z.string().optional(),
     }),
-    execute: async (params: any) => {
+    execute: async (params: {
+      functions?: string[];
+      levels?: string[];
+      begin?: string;
+      end?: string;
+      content?: string;
+      limit?: string;
+      skip?: string;
+    }): Promise<string> => {
       try {
         const qs = new URLSearchParams();
         if (params.functions)

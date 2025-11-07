@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { Bucket, BucketProperty, BucketAcl } from "../types/index.js";
+import { bucketPropertySchema, bucketAclSchema } from "../types/zod-schemas.js";
 
 export function registerBucketTools(server: any, makeSpicaRequest: any) {
   server.addTool({
@@ -25,17 +27,12 @@ export function registerBucketTools(server: any, makeSpicaRequest: any) {
     parameters: z.object({
       title: z.string(),
       description: z.string(),
-      properties: z.record(z.any()),
+      properties: z.record(bucketPropertySchema),
       icon: z.string().optional(),
       primary: z.string().optional(),
       readOnly: z.boolean().optional(),
       history: z.boolean().optional(),
-      acl: z
-        .object({
-          read: z.string(),
-          write: z.string(),
-        })
-        .optional(),
+      acl: bucketAclSchema.optional(),
     }),
     execute: async ({
       title,
@@ -46,9 +43,18 @@ export function registerBucketTools(server: any, makeSpicaRequest: any) {
       readOnly = false,
       history = false,
       acl = { read: "true==true", write: "true==true" },
-    }: any) => {
+    }: {
+      title: string;
+      description: string;
+      properties: Record<string, BucketProperty>;
+      icon?: string;
+      primary?: string;
+      readOnly?: boolean;
+      history?: boolean;
+      acl?: BucketAcl;
+    }) => {
       try {
-        const bucketData = {
+        const bucketData: Bucket = {
           title,
           description,
           icon,
@@ -79,27 +85,56 @@ export function registerBucketTools(server: any, makeSpicaRequest: any) {
       bucketId: z.string(),
       title: z.string().optional(),
       description: z.string().optional(),
-      properties: z.record(z.any()).optional(),
+      properties: z.record(bucketPropertySchema).optional(),
       icon: z.string().optional(),
       primary: z.string().optional(),
       readOnly: z.boolean().optional(),
       history: z.boolean().optional(),
-      acl: z
-        .object({
-          read: z.string(),
-          write: z.string(),
-        })
-        .optional(),
+      acl: bucketAclSchema.optional(),
     }),
-    execute: async ({ bucketId, ...updateData }: any) => {
+    execute: async ({
+      bucketId,
+      title,
+      description,
+      properties,
+      icon,
+      primary,
+      readOnly,
+      history,
+      acl,
+    }: {
+      bucketId: string;
+      title?: string;
+      description?: string;
+      properties?: Record<string, BucketProperty>;
+      icon?: string;
+      primary?: string;
+      readOnly?: boolean;
+      history?: boolean;
+      acl?: BucketAcl;
+    }) => {
       try {
         const currentResponse = await makeSpicaRequest(
           "GET",
           `/bucket/${bucketId}`
         );
-        const currentData = currentResponse.data;
+        const currentData: Bucket = currentResponse.data;
 
-        const mergedData = { ...currentData, ...updateData, _id: bucketId };
+        const updateData: Partial<Bucket> = {};
+        if (title !== undefined) updateData.title = title;
+        if (description !== undefined) updateData.description = description;
+        if (properties !== undefined) updateData.properties = properties;
+        if (icon !== undefined) updateData.icon = icon;
+        if (primary !== undefined) updateData.primary = primary;
+        if (readOnly !== undefined) updateData.readOnly = readOnly;
+        if (history !== undefined) updateData.history = history;
+        if (acl !== undefined) updateData.acl = acl;
+
+        const mergedData: Bucket = {
+          ...currentData,
+          ...updateData,
+          _id: bucketId,
+        };
 
         const response = await makeSpicaRequest(
           "PUT",
@@ -123,7 +158,7 @@ export function registerBucketTools(server: any, makeSpicaRequest: any) {
     parameters: z.object({
       bucketId: z.string(),
     }),
-    execute: async ({ bucketId }: any) => {
+    execute: async ({ bucketId }: { bucketId: string }): Promise<string> => {
       try {
         await makeSpicaRequest("DELETE", `/bucket/${bucketId}`);
         return `Bucket deleted successfully`;

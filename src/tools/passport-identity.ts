@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Identity } from "../types/index.js";
 
 export function registerPassportIdentityTools(
   server: any,
@@ -12,7 +13,15 @@ export function registerPassportIdentityTools(
       skip: z.number().optional(),
       sort: z.string().optional(),
     }),
-    execute: async ({ limit, skip, sort }: any) => {
+    execute: async ({
+      limit,
+      skip,
+      sort,
+    }: {
+      limit?: number;
+      skip?: number;
+      sort?: string;
+    }): Promise<string> => {
       try {
         let endpoint = "/passport/identity";
         const params = new URLSearchParams();
@@ -37,7 +46,7 @@ export function registerPassportIdentityTools(
     name: "passport-identity-get",
     description: "Get a single identity by id",
     parameters: z.object({ id: z.string() }),
-    execute: async ({ id }: any) => {
+    execute: async ({ id }: { id: string }): Promise<string> => {
       try {
         const response = await makeSpicaRequest(
           "GET",
@@ -60,11 +69,19 @@ export function registerPassportIdentityTools(
     parameters: z.object({
       identifier: z.string(),
       password: z.string(),
-      attributes: z.record(z.any()).optional(),
+      attributes: z.record(z.unknown()).optional(),
     }),
-    execute: async ({ identifier, password, attributes }: any) => {
+    execute: async ({
+      identifier,
+      password,
+      attributes,
+    }: {
+      identifier: string;
+      password: string;
+      attributes?: Record<string, unknown>;
+    }): Promise<string> => {
       try {
-        const body: any = { identifier, password };
+        const body: Identity = { identifier, password };
         if (attributes) body.attributes = attributes;
         const response = await makeSpicaRequest(
           "POST",
@@ -89,15 +106,30 @@ export function registerPassportIdentityTools(
       id: z.string(),
       identifier: z.string().optional(),
       password: z.string().optional(),
-      attributes: z.record(z.any()).optional(),
+      attributes: z.record(z.unknown()).optional(),
     }),
-    execute: async ({ id, ...update }: any) => {
+    execute: async ({
+      id,
+      identifier,
+      password,
+      attributes,
+    }: {
+      id: string;
+      identifier?: string;
+      password?: string;
+      attributes?: Record<string, unknown>;
+    }): Promise<string> => {
       try {
         const current = await makeSpicaRequest(
           "GET",
           `/passport/identity/${id}`
         );
-        const merged = { ...current.data, ...update, _id: id };
+        const update: Partial<Identity> = {};
+        if (identifier !== undefined) update.identifier = identifier;
+        if (password !== undefined) update.password = password;
+        if (attributes !== undefined) update.attributes = attributes;
+
+        const merged: Identity = { ...current.data, ...update, _id: id };
         const response = await makeSpicaRequest(
           "PUT",
           `/passport/identity/${id}`,
@@ -118,7 +150,7 @@ export function registerPassportIdentityTools(
     name: "passport-identity-delete",
     description: "Delete an identity",
     parameters: z.object({ id: z.string() }),
-    execute: async ({ id }: any) => {
+    execute: async ({ id }: { id: string }): Promise<string> => {
       try {
         await makeSpicaRequest("DELETE", `/passport/identity/${id}`);
         return `Identity deleted successfully`;
@@ -132,7 +164,7 @@ export function registerPassportIdentityTools(
     name: "passport-identity-verify",
     description: "Verify current identity token",
     parameters: z.object({}),
-    execute: async () => {
+    execute: async (): Promise<string> => {
       try {
         const response = await makeSpicaRequest(
           "GET",
@@ -149,7 +181,13 @@ export function registerPassportIdentityTools(
     name: "passport-login",
     description: "Obtain access and refresh tokens by identifier/password",
     parameters: z.object({ identifier: z.string(), password: z.string() }),
-    execute: async ({ identifier, password }: any) => {
+    execute: async ({
+      identifier,
+      password,
+    }: {
+      identifier: string;
+      password: string;
+    }): Promise<string> => {
       try {
         const response = await makeSpicaRequest("POST", "/passport/identify", {
           identifier,
