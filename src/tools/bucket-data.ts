@@ -63,7 +63,7 @@ export function registerBucketDataTools(server: any, makeSpicaRequest: any) {
       dataId: z.string(),
       data: bucketDataSchema,
     }),
-    execute: async ({ bucketId, dataId, data }: any) => {
+    execute: async ({ bucketId, dataId, data }: { bucketId: string; dataId: string; data: Record<string, unknown> }): Promise<string> => {
       try {
         const response = await makeSpicaRequest(
           "PUT",
