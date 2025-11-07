@@ -158,7 +158,7 @@ export function registerBucketTools(server: any, makeSpicaRequest: any) {
     parameters: z.object({
       bucketId: z.string(),
     }),
-    execute: async ({ bucketId }: { bucketId: string }) => {
+    execute: async ({ bucketId }: { bucketId: string }): Promise<string> => {
       try {
         await makeSpicaRequest("DELETE", `/bucket/${bucketId}`);
         return `Bucket deleted successfully`;
