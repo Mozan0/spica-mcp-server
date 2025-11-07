@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { bucketDataSchema } from "../types/zod-schemas.js";
 
 export function registerBucketDataTools(server: any, makeSpicaRequest: any) {
   server.addTool({
@@ -34,7 +35,7 @@ export function registerBucketDataTools(server: any, makeSpicaRequest: any) {
     description: "Add new data to a bucket.",
     parameters: z.object({
       bucketId: z.string(),
-      data: z.record(z.any()),
+      data: bucketDataSchema,
     }),
     execute: async ({ bucketId, data }: any) => {
       try {
@@ -60,7 +61,7 @@ export function registerBucketDataTools(server: any, makeSpicaRequest: any) {
     parameters: z.object({
       bucketId: z.string(),
       dataId: z.string(),
-      data: z.record(z.any()),
+      data: bucketDataSchema,
     }),
     execute: async ({ bucketId, dataId, data }: any) => {
       try {
